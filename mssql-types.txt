@@ -92,5 +92,6 @@ in the 'images' folder within the site AND the following code is added to the
 	   "'<img align=middle alt=dash src=images/xf-mysql-logo.png " .
 	   " width=182 height=37pt style=padding:5px;margin-right:5px;>' " .
            "</script>";
+  }
 <<
 
