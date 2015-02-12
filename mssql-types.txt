@@ -1,0 +1,96 @@
+This mssql driver for xataface will translate mssql datatypes to mssql data
+types in order to let xataface handle the mssql data proberly.
+
+Secondly SQL query'es is translated from mysql dialect to mssql dialect. This
+is the case among others with mysql 'show tables', 'show columns' witch does
+not exist in mssql. this is done by help of some views, stored procedures and functions.
+So you will se these apear in your mssql database.
+
+The work is based on a 'incremental style' so I translate when there is need
+for it in out mssql db.
+
+The following list shows the mapping between mssql types ans mysql types. Note
+the driver set ('ReturnDatesAsStrings' => true) meaning that date and time
+types will be returned as strings.
+
+  mssql data type:	|  Translated mysql data type
+  ---------------------------------------------------
+  bigint		|
+  binary(50)		|
+  bit			|  bit(1)
+  char(10)		|
+  date			|
+  time			|  time
+  datetime		|  datetime
+  datetime2(7)		|  datetime
+  datetimeoffset(7)	|
+  decimal(18.0)		|
+  float			|
+  geography		|
+  geometry		|
+  hierachyid		|
+  image			|
+  int			|  int
+  money			|
+  nchar(10)		|  varchar
+  ntext			|
+  numeric(18,0)		|
+  nvarchar(50)		|  varchar
+  nvarchat(MAX)		|
+  real			|
+  smalldatetime		|
+  smallint		|
+  smallmoney		|
+  sql_variant		|
+  text			|
+  time			|  time
+  time(7)		|
+  timestamp		|
+  tinyint		|
+  uniqueidentifier	|
+  varbinary(50)		|
+  varbinary(MAX)	|
+  varchar(50)		|
+  varchar(MAX)		|
+  xml			|
+
+USAGE:
+
+The mssql driver works only with the new g2 theme.
+Place the 'mssql.php' file into 'xataface/xf/db/drivers/' directory. ('a
+mssql.php' should also be located here. Add (or replace) a 'driver = mssql' to
+the '[_database]' section of the 'conf.ini' file
+
+Following is a copy of parts of my 'conf.ini' file:
+
+[_database]
+  driver="mssql"
+  host="(localdb)\mssqldb"
+  name="test"
+  user=""
+  password=""
+
+In case of a blank 'user' Windows Authentication will be used.
+
+
+DISPLAY DB DRIVER
+
+I have added 2 logos 'xf-mssql-logo' and 'xf-mysql-logo'. If these are placed
+in the 'images' folder within the site AND the following code is added to the
+'Application class' the 'xataface' logo will show the used database.
+
+<<
+  function block__after_xf_logo() {
+    $app =& Dataface_Application::getInstance();
+    if ($app->_conf['_database']['driver'] == "mssql")
+      echo "<script>document.getElementById('xf-logo').innerHTML = " .
+	   "'<img align=middle alt=dash src=images/xf-mssql-logo.png " .
+	   " width=182 height=37pt style=padding:5px;margin-right:5px;>' " .
+           "</script>";
+    else if ($app->_conf['_database']['driver'] == "mysql")
+      echo "<script>document.getElementById('xf-logo').innerHTML = " .
+	   "'<img align=middle alt=dash src=images/xf-mysql-logo.png " .
+	   " width=182 height=37pt style=padding:5px;margin-right:5px;>' " .
+           "</script>";
+<<
+
