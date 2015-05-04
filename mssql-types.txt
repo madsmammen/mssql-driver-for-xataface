@@ -19,7 +19,7 @@ types will be returned as strings.
   binary(50)		|
   bit			|  bit(1)
   char(10)		|
-  date			|
+  date			|  date
   time			|  time
   datetime		|  datetime
   datetime2(7)		|  datetime
@@ -42,7 +42,7 @@ types will be returned as strings.
   smallint		|
   smallmoney		|
   sql_variant		|
-  text			|
+  text			|  text
   time			|  time
   time(7)		|
   timestamp		|
@@ -71,6 +71,15 @@ Following is a copy of parts of my 'conf.ini' file:
   password=""
 
 In case of a blank 'user' Windows Authentication will be used.
+
+
+STORED PROCEDURE
+There will be created 2 procedures:
+	showTables:		equivalent to mysql 'show tables'
+	showColumnsFrom:	equivalent to mysql 'show columns from ..'
+
+Note: The table need a primary key in order for this procedures - and xataface - to work.
+
 
 
 DISPLAY DB DRIVER

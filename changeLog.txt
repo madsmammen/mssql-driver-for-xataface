@@ -1,0 +1,10 @@
+4-5-20015:	Drivers for sqlsrv included. If you are using xampp add the
+following lines into 'php/php.ini':
+
+	extension=php_pdo_sqlsrv_55_ts.dll
+	extension=php_sqlsrv_55_ts.dll
+
+And place copy of the driver files into 'php/ext' folder
+
+
+12-2-2015:	Initial release

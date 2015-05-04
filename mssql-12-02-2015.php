@@ -32,10 +32,9 @@
       else if (self::$logFile == -1)
 	return;
 
-      if (false) {
-        fwrite(self::$logFile, "$nr: $text\n" );
-        fflush(self::$logFile);
-      }
+      fwrite(self::$logFile, "$nr: $text\n" );
+      // fwrite(self::$logFile, "debug: " . $app->_conf['_database']['debug']);
+      fflush(self::$logFile);
     }
 
     public static function _echo($str) {
@@ -94,7 +93,7 @@ function xf_db_connect($host, $user, $pass) {
   
   // $app =& Dataface_Application::getInstance();
   // fwrite(self::$logFile, "debug: " . $app->_conf['_database']['debug']);
-  // SQLLog::noLogging();
+  SQLLog::noLogging();
 
   SQLLog::log("  --> sqlsrv_connect('$serverName')");
   if ($conn) {
@@ -147,9 +146,6 @@ function xf_db_select_db($db) {
     SQLLog::Log("  ==> OK $rc");
     DBConn::setTable($db);
 
-    $tb = DBConn::table();
-    SQLLog::Log("  ==> OK $tb");
-    
     // Create view's: 'dataface__pkeys'
     $setup[0] = 'IF OBJECT_ID ( \'dataface__pkeys\', \'V\' ) IS NULL ' .
                 'exec(\'CREATE VIEW dataface__pkeys AS ' .
@@ -179,13 +175,9 @@ function xf_db_select_db($db) {
            '   when \'\'int\'\' then \'\'int(\'\' + CONVERT(varchar, t.NUMERIC_PRECISION) + \'\')\'\' ' .
            '   when \'\'nchar\'\' then \'\'varchar(\'\' + CONVERT(varchar, t.CHARACTER_MAXIMUM_LENGTH) + \'\')\'\' ' .
            '   when \'\'nvarchar\'\' then \'\'varchar(\'\' + CONVERT(varchar, t.CHARACTER_MAXIMUM_LENGTH) + \'\')\'\' ' .
-           '   when \'\'char\'\' then \'\'varchar(\'\' + CONVERT(varchar, t.CHARACTER_MAXIMUM_LENGTH) + \'\')\'\' ' .
-           '   when \'\'varchar\'\' then \'\'varchar(\'\' + CONVERT(varchar, t.CHARACTER_MAXIMUM_LENGTH) + \'\')\'\' ' .
-	   '   when \'\'text\'\' then \'\'text\'\' ' .
 	   '   when \'\'bit\'\' then \'\'bit(1)\'\' ' .
 	   '   when \'\'time\'\' then \'\'time\'\' ' .
-	   '   when \'\'date\'\' then \'\'date\'\' ' .
-	   '   when \'\'datetime\'\' then \'\'datetime\'\' ' .
+	   '   when \'\'date\'\' then \'\'varchar(50)\'\' ' .
 	   '   when \'\'datetime2\'\' then \'\'varchar(50)\'\' ' .
 	   '   else \'\'Unknown\'\'  end ' .
 	   ' ) AS "Type",  ' .
@@ -193,7 +185,7 @@ function xf_db_select_db($db) {
 	   '  (SELECT IIF(t.column_name = d.column_name, \'\'PRI\'\', \'\'\'\')) AS "Key", ' .
 	   ' t.column_default AS "Default",' .
            '  ISNULL((SELECT Extra from dataface__autoincr WHERE table_name = t.TABLE_NAME AND' .
-           '  column_name = t.COLUMN_NAME), \'\'\'\') AS "Extra" from ' . $tb . '.INFORMATION_SCHEMA.COLUMNS AS t ' .
+           '  column_name = t.COLUMN_NAME), \'\'\'\') AS "Extra" from test.INFORMATION_SCHEMA.COLUMNS AS t ' .
            '  inner JOIN dataface__pkeys AS d ON t.TABLE_NAME = d.TABLE_NAME WHERE t.TABLE_NAME = @param\')';
     // Create stored procedures: 'convert_tz'
     $setup[4] = 'IF OBJECT_ID ( \'convert_tz\', \'FN\' ) IS  NULL ' .
@@ -299,7 +291,6 @@ function xf_db_replace($str) {
     $pattern[4] = '/^SHOW[ ]*TABLES[ ]*LIKE[ ]*\'([a-zA-Z_%]*)\'/';
     $pattern[5] = '/^show[ ]*tables where(.*)$/';
     $pattern[6] = '/^show[ ]*columns[ ]*from[ ]*\"([a-zA-Z_]*)\"$/';
-    $pattern[7] = '/^show[ ]*databases$/';
     $replace = array();
     $replace[0] = '"';
     $replace[1] = 'Select Table_name as "Table name" ' . 
@@ -318,7 +309,6 @@ function xf_db_replace($str) {
                   'Where Table_type = \'BASE TABLE\' and Objectproperty ' .
                   '(Object_id(Table_name), \'IsMsShipped\') = 0 AND $1' ;
     $replace[6] = 'showColumnsFrom \'$1\'';
-    $replace[7] = 'SELECT NAME FROM sys.sysdatabases ';
 
     $newStr = preg_replace($pattern, $replace, $str);
   } else if (($word[0] == "replace") || ($word[0] == "REPLACE")) {
@@ -372,21 +362,6 @@ function xf_db_replace($str) {
     $replace[6] = 'IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES where TABLE_NAME = \'$1\') ' .
 	          'CREATE TABLE "$1" $2';
     $newStr = preg_replace($pattern, $replace, $str);
-  // } else if (($word[0] == "truncate") || ($word[0] == "TRUNCATE")) {
-      // SQLLog::Log("truncate");
-  } else if (($word[0] == "insert" && $word[1] == "ignore") || ($word[0] == "INSERT" && $word[1] == "IGNORE")) {     // 'insert ignore ....' 
-    SQLLog::Log("truncate");
-    $arg = explode(' ', trim($str));
-    SQLLog::Log($arg[0] . ", " . $arg[1] . ", " . $arg[2] . ", " . $arg[3] . ", " . $arg[4]);
-    $str = "INSERT INTO $arg[3] ($arg[5]) SELECT $arg[7] " .
-	      " WHERE NOT EXISTS (SELECT $arg[5] FROM $arg[3] WHERE $arg[5] = $arg[7])";
-    $pattern = array();
-    $pattern[0] = '/`/';
-    $replace = array();
-    $replace[0] = '"';
-
-    $newStr = preg_replace($pattern, $replace, $str);
-
   } else {			// NOT 'show' or 'create'
     SQLLog::_echo ("<br/>\$str: $str<br/>");
     $pattern = array();
@@ -404,7 +379,6 @@ function xf_db_replace($str) {
     $replace[0] = '"';
     $replace[1] = 'int';
     $replace[2] = 'LEN(';
-    $replace[2] = 'DATALENGTH (';
     $replace[3] = 'select TOP create_date AS \'Create_time\',  \'NULL\' AS \'Update_time\' '.
 	          'from sys.databases where name = $1';
     $replace[4] = '$1 TOP $4 $2';
