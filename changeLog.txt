@@ -1,4 +1,7 @@
-4-5-20015:	Drivers for sqlsrv included. If you are using xampp add the
+29-7-2015:	Updates driver. Most importent is paging i.e. equivalent of
+ysql's limit.
+
+4-5-2015:	Drivers for sqlsrv included. If you are using xampp add the
 following lines into 'php/php.ini':
 
 	extension=php_pdo_sqlsrv_55_ts.dll
